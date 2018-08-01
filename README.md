@@ -13,6 +13,7 @@ Columns:
 * ServiceNow Admin User id - it must have update privileges on the sys_user_group table
 * ServiceNow Admin Password
 * PagerDuty Service Name - the Service Name in PagerDuty that should have the extension
+* PagerDuty Escalation Policy Name - OPTIONAL since the Service has an Escalation Policy
 * ServiceNow Assignment Group Name - The Assignment Group to map to the PagerDuty  Escalation Policy
 * Sync Option (either "auto" or "manual")
 * ServiceNow Integration (either "v4" or "v5")

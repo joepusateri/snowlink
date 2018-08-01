@@ -87,6 +87,24 @@ sub getService {
   return %service;
 }
 
+sub getEscalationPolicy {
+  my($ep_name) = @_;
+  my($ep_id);
+
+  # retrieve specified service
+  $cmd = "curl -s -H 'Authorization: Token token=$opts{pagerduty_token}' " .
+      "'https://api.pagerduty.com/escalation_policies?query=@{[uri_escape($ep_name)]}'";
+  print "$cmd\n" if($opts{debug});
+  $j = scalar(`$cmd`);
+  my($as) = from_json($j, {allow_nonref=>1});
+  print "$j\n" if($opts{debug});
+  for(@{$as->{escalation_policies}}){
+    $ep_id = $_->{id};
+    last;
+  }
+  return $ep_id;
+}
+
 sub findExistingExtension {
   my($snow_url_target, $snow_service_target, $int_version_key) = @_;
   print "Looking for: $snow_url_target $snow_service_target\n" if($opts{debug});
@@ -218,8 +236,8 @@ while (my $line = <$data>) {
   if ($csv->parse($line)) {
 
       my @fields = $csv->fields();
-      print("Read line: $fields[0], $fields[1], $fields[2], $fields[3], $fields[4], $fields[5], $fields[6], $fields[7], $fields[8]\n") if($opts{debug});
-      pair($fields[0], $fields[1], $fields[2], $fields[3], $fields[4], $fields[5], $fields[6], $fields[7], $fields[8]);
+      print("Read line: $fields[0], $fields[1], $fields[2], $fields[3], $fields[4], $fields[5], $fields[6], $fields[7], $fields[8], $fields[9]\n") if($opts{debug});
+      pair($fields[0], $fields[1], $fields[2], $fields[3], $fields[4], $fields[5], $fields[6], $fields[7], $fields[8], $fields[9]);
 
   } else {
       warn "Line could not be parsed: $line\n";
@@ -228,7 +246,7 @@ while (my $line = <$data>) {
 
 sub pair {
   my($parm_snow_instance, $parm_snow_api_user, $parm_snow_api_pw,
-     $parm_snow_update_user, $parm_snow_update_pw, $parm_service_target,
+     $parm_snow_update_user, $parm_snow_update_pw, $parm_service_target, $parm_escalation_policy,
      $parm_snow_assignment_group_name, $parm_sync, $int_version_key)=@_;
   #get hash with service id and escalation policy id
   my($snow_url_target) = "https://$parm_snow_instance.service-now.com/api/x_pd_integration/pagerduty2sn";
@@ -241,6 +259,17 @@ sub pair {
     print "Service ID not found for $parm_service_target. Skipping...\n";
     last;
   }
+
+  if ($parm_escalation_policy)
+  {
+    my($escalation_policy_id) = getEscalationPolicy($parm_escalation_policy);
+    if ($escalation_policy_id)
+    {
+      $service{'epid'} = $escalation_policy_id;
+    }
+  }
+
+
   #using service id, find if PD has an extension already
   my($found_extension) = findExistingExtension($snow_url_target, $service{'serviceid'}, $int_version_key);
 
