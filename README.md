@@ -10,12 +10,15 @@ Columns:
 * ServiceNow instance (e.g. dev12345)
 * ServiceNow REST API User id
 * ServiceNow REST API Password
-* ServiceNow Admin User id (i.e. it must have update privileges on the sys_user_group table)
+* ServiceNow Admin User id - it must have update privileges on the sys_user_group table
 * ServiceNow Admin Password
-* PagerDuty Service Name
-* ServiceNow Assignment Group Name
+* PagerDuty Service Name - the Service Name in PagerDuty that should have the extension
+* ServiceNow Assignment Group Name - The Assignment Group to map to the PagerDuty  Escalation Policy
 * Sync Option (either "auto" or "manual")
 * ServiceNow Integration (either "v4" or "v5")
+
+The REST API User and Password are for the Extension to be created in PagerDuty. 
+The Admin User and Password are used to update the Assignment Group in ServiceNow. 
 
 ## Running
 
