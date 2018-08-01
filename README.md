@@ -25,11 +25,12 @@ Parameters:
 * d (optional) - to debug
 
 Example:
+```
 ./snowlink -p 0123456789001234567890 -f /tmp/myfile.csv
-
+```
 OR
-
+```
 ./snowlink -p 0123456789001234567890 -f /tmp/myfile.csv -d
-
+```
 
 
