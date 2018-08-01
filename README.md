@@ -24,5 +24,12 @@ Parameters:
 * f = input file name (required)
 * d (optional) - to debug
 
-./snowlink -p <PagerDuty API Key> -f <File Name> -d
+Example:
+./snowlink -p 0123456789001234567890 -f /tmp/myfile.csv
+
+OR
+
+./snowlink -p 0123456789001234567890 -f /tmp/myfile.csv -d
+
+
 
