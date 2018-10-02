@@ -177,18 +177,53 @@ sub createExtension {
   return $found_webhook_id;
 }
 
-sub updateAssignmentGroup {
-  my($snow_update_user, $snow_update_password, $snow_assignment_group_name, $snow_instance, $webhook_id, %service) = @_;
-  print "Updating Assignment Group $snow_assignment_group_name\n" if($opts{debug});
+sub findAssignmentGroupId {
+  my($snow_update_user, $snow_update_password, $snow_assignment_group_name, $snow_instance) = @_;
+  print "Retrieving Assignment Group $snow_assignment_group_name\n" if($opts{debug});
   #get sys_id for SN Assignment Group
   # $cmd = "curl -s -H 'Authorization: basic cGFnZXJkdXR5LWludDpQYWdlckR1dHk=' " .
+
   $cmd = "curl -s -u $snow_update_user:$snow_update_password " .
       "-H 'Accept: application/json' " .
       "'https://$snow_instance.service-now.com/api/now/table/sys_user_group?sysparm_query=name=@{[uri_escape($snow_assignment_group_name)]}'";
   print "$cmd\n" if($opts{debug});
   $j = scalar(`$cmd`);
   my($sag) = from_json($j, {allow_nonref=>1});
+  print "$j\n" if($opts{debug});
   my($snow_ag_id) = $sag->{result}[0]{sys_id};
+
+  print "Assignment Group id is $snow_ag_id\n" if($opts{debug});
+  return $snow_ag_id;
+}
+
+sub findConfigurationItem {
+  my($snow_update_user, $snow_update_password, $parm_snow_ci_name, $snow_instance) = @_;
+  print "Retrieving Assignment Group $parm_snow_ci_name\n" if($opts{debug});
+  #get sys_id for SN Assignment Group
+  # $cmd = "curl -s -H 'Authorization: basic cGFnZXJkdXR5LWludDpQYWdlckR1dHk=' " .
+
+  $cmd = "curl -s -u $snow_update_user:$snow_update_password " .
+      "-H 'Accept: application/json' " .
+      "'https://$snow_instance.service-now.com/api/now/table/cmdb_ci?sysparm_query=name=@{[uri_escape($parm_snow_ci_name)]}'";
+  print "$cmd\n" if($opts{debug});
+  $j = scalar(`$cmd`);
+  my($sag) = from_json($j, {allow_nonref=>1});
+  print "$j\n" if($opts{debug});
+  my(%snow_ci);
+  $snow_ci{'sys_id'} =  $sag->{result}[0]{'sys_id'};
+  if ($sag->{result}[0]{'assignment_group'})
+  {
+    $snow_ci{'assignment_group_id'} =  $sag->{result}[0]{'assignment_group'}{'value'};
+  }
+  print "Configuration Item id is $snow_ci{'sys_id'}\n" if($opts{debug});
+  return %snow_ci;
+}
+
+sub updateAssignmentGroup {
+  my($snow_update_user, $snow_update_password, $snow_ag_id, $snow_instance, $webhook_id, %service) = @_;
+  print "Updating Assignment Group $snow_ag_id\n" if($opts{debug});
+  #get sys_id for SN Assignment Group
+  # $cmd = "curl -s -H 'Authorization: basic cGFnZXJkdXR5LWludDpQYWdlckR1dHk=' " .
 
   if ($snow_ag_id)
   {
@@ -209,48 +244,55 @@ sub updateAssignmentGroup {
     $j = scalar(`$cmd`);
     my($sag_update) = from_json($j, {allow_nonref=>1});
     print "$j\n" if($opts{debug});
-    print "Successfully updated $snow_assignment_group_name\n";
+    print "Successfully updated Assignment Group \"$sag_update->{result}{'name'}\" ID: $snow_ag_id\n";
   }
   else
   {
-    print "Unable to find Assignment Group $snow_assignment_group_name\n";
+    print "Unable to update Assignment Group $snow_ag_id\n";
   }
 }
-#my($parm_snow_instance) = "dev52132";
-#my($parm_snow_api_user) = "pagerduty-int";
-#my($parm_snow_api_pw) = "PagerDuty";
-#my($parm_snow_update_user) = "pagerduty-int";
-#my($parm_snow_update_pw) = "PagerDuty";
 
-#y($parm_service_target) = "AddResponderCallout";
-#my($parm_snow_assignment_group_name) = "Change Management";
-my $csv = Text::CSV->new({ sep_char => ',' });
+sub updateConfigurationItem {
+  my($snow_update_user, $snow_update_password, $snow_ci_id, $snow_instance, $webhook_id, %service) = @_;
 
-my $file = $opts{filename};
-print "file is $file\n";
+  print "Updating Assignment Group $snow_ci_id\n" if($opts{debug});
+  #get sys_id for SN Assignment Group
+  # $cmd = "curl -s -H 'Authorization: basic cGFnZXJkdXR5LWludDpQYWdlckR1dHk=' " .
 
-open(my $data, '<', $file) or die "Could not open '$file' $!\n";
-while (my $line = <$data>) {
-  chomp $line;
-
-  if ($csv->parse($line)) {
-
-      my @fields = $csv->fields();
-      print("Read line: $fields[0], $fields[1], $fields[2], $fields[3], $fields[4], $fields[5], $fields[6], $fields[7], $fields[8], $fields[9]\n") if($opts{debug});
-      pair($fields[0], $fields[1], $fields[2], $fields[3], $fields[4], $fields[5], $fields[6], $fields[7], $fields[8], $fields[9]);
-
-  } else {
-      warn "Line could not be parsed: $line\n";
+  if ($snow_ci_id)
+  {
+    #push SN Assignment Group update
+    print "Found Group\n" if($opts{debug});
+    my($snow_ci_body) = {
+      "x_pd_integration_pagerduty_webhook" => $webhook_id,
+      "x_pd_integration_pagerduty_service" => $service{'serviceid'}
+    };
+    my($jsonbody) = to_json $snow_ci_body;
+    $cmd = "curl -s -u $snow_update_user:$snow_update_password " .
+        "-H 'Accept: application/json' -X PUT " .
+        "-H 'Content-Type: application/json' " .
+        "-d '$jsonbody' " .
+        "'https://$snow_instance.service-now.com/api/now/table/cmdb_ci/$snow_ci_id'";
+    print "$cmd\n" if($opts{debug});
+    $j = scalar(`$cmd`);
+    my($sag_update) = from_json($j, {allow_nonref=>1});
+    print "$j\n" if($opts{debug});
+    print "Successfully updated Configuration Item \"$sag_update->{result}{'name'}\" ID: $snow_ci_id\n";
+  }
+  else
+  {
+    print "Unable to update Configuration Item $snow_ci_id\n";
   }
 }
 
 sub pair {
   my($parm_snow_instance, $parm_snow_api_user, $parm_snow_api_pw,
      $parm_snow_update_user, $parm_snow_update_pw, $parm_service_target, $parm_escalation_policy,
-     $parm_snow_assignment_group_name, $parm_sync, $int_version_key)=@_;
+     $parm_snow_ci_name, $parm_snow_assignment_group_name, $parm_sync, $int_version_key)=@_;
   #get hash with service id and escalation policy id
   my($snow_url_target) = "https://$parm_snow_instance.service-now.com/api/x_pd_integration/pagerduty2sn";
   my(%service) = getService($parm_service_target);
+
   print "serviceid=$service{'serviceid'}\n" if($opts{debug});
   print "epid     =$service{'epid'}\n" if($opts{debug});
 
@@ -262,9 +304,11 @@ sub pair {
 
   if ($parm_escalation_policy)
   {
+    print "Trying to find Escalation Policy \"$parm_escalation_policy\" from input\n" if($opts{debug});
     my($escalation_policy_id) = getEscalationPolicy($parm_escalation_policy);
     if ($escalation_policy_id)
     {
+      print "Found Escalation Policy $parm_escalation_policy at $escalation_policy_id\n" if($opts{debug});
       $service{'epid'} = $escalation_policy_id;
     }
   }
@@ -287,6 +331,84 @@ sub pair {
     print "Created ServiceNow Extension for $parm_service_target ($service{'serviceid'} $service{'epid'} $found_webhook_id)\n";
   }
 
+  #find SNOW AG
+  my($snow_ci_id);
+  my($snow_related_ag_id);
+  if ($parm_snow_ci_name)
+  {
+
+    my(%snow_ci) = findConfigurationItem($parm_snow_update_user, $parm_snow_update_pw, $parm_snow_ci_name, $parm_snow_instance);
+    $snow_ci_id = $snow_ci{'sys_id'};
+    $snow_related_ag_id = $snow_ci{'assignment_group_id'};
+    if ($snow_ci_id eq "")
+    {
+      print "Could not find expected Configuration Item \"$parm_snow_ci_name\". Skipping...\n";
+      return;
+    }
+  }
+
+  if ($snow_related_ag_id eq "" && $parm_snow_assignment_group_name eq "")
+  {
+    print "Assignment group not provided and the Configuration Item \"$parm_snow_ci_name\" has no related Assignment Group.  Skipping...\n";
+    return;
+  }
+
+  my($snow_ag_id) = "";
+  if ($parm_snow_assignment_group_name)
+  {
+     $snow_ag_id = findAssignmentGroupId($parm_snow_update_user, $parm_snow_update_pw, $parm_snow_assignment_group_name, $parm_snow_instance);
+  }
+  else #AG Name not provided
+  {
+    if ($snow_related_ag_id ne "") # Related AG found
+    {
+      print "No Assignment Group provided, using ID: $snow_related_ag_id\n";
+      #find SNOW AG
+      $snow_ag_id = $snow_related_ag_id;
+    }
+  }
+
   #update SNOW with values
-  updateAssignmentGroup($parm_snow_update_user, $parm_snow_update_pw, $parm_snow_assignment_group_name, $parm_snow_instance, $found_webhook_id, %service);
+  if ($snow_ci_id)
+  {
+    updateConfigurationItem($parm_snow_update_user, $parm_snow_update_pw, $snow_ci_id, $parm_snow_instance, $found_webhook_id, %service);
+  }
+  else
+  {
+    if ($parm_snow_ci_name)
+    {
+      print "Provided Configuration Item \"$parm_snow_ci_name\" not found. Skipping...\n";
+      return;
+    }
+  }
+  #update SNOW with values
+  updateAssignmentGroup($parm_snow_update_user, $parm_snow_update_pw, $snow_ag_id, $parm_snow_instance, $found_webhook_id, %service);
+}
+
+#my($parm_snow_instance) = "dev52132";
+#my($parm_snow_api_user) = "pagerduty-int";
+#my($parm_snow_api_pw) = "PagerDuty";
+#my($parm_snow_update_user) = "pagerduty-int";
+#my($parm_snow_update_pw) = "PagerDuty";
+
+#y($parm_service_target) = "AddResponderCallout";
+#my($parm_snow_assignment_group_name) = "Change Management";
+my $csv = Text::CSV->new({ sep_char => ',' });
+
+my $file = $opts{filename};
+print "file is $file\n";
+
+open(my $data, '<', $file) or die "Could not open '$file' $!\n";
+while (my $line = <$data>) {
+  chomp $line;
+
+  if ($csv->parse($line)) {
+
+      my @fields = $csv->fields();
+      print("\nRead line: $fields[0], $fields[1], *****, $fields[3], *****, $fields[5], $fields[6], $fields[7], $fields[8], $fields[9], $fields[10]\n");
+      pair($fields[0], $fields[1], $fields[2], $fields[3], $fields[4], $fields[5], $fields[6], $fields[7], $fields[8], $fields[9], $fields[10]);
+
+  } else {
+      warn "Line could not be parsed: $line\n";
+  }
 }
