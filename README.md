@@ -10,7 +10,7 @@ Columns:
 * ServiceNow instance (e.g. dev12345)
 * ServiceNow REST API User id
 * ServiceNow REST API Password
-* ServiceNow Admin User id - it MUST HAVE UPDATE PRIVILEGES on the sys_user_group table
+* ServiceNow Admin User id - it MUST HAVE UPDATE PRIVILEGES on the sys_user_group and cmdb_ci tables
 * ServiceNow Admin Password
 * PagerDuty Service Name - the Service Name in PagerDuty that should have the extension
 * PagerDuty Escalation Policy Name - OPTIONAL since the Service has an Escalation Policy
