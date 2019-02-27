@@ -181,7 +181,6 @@ sub findAssignmentGroupId {
   my($snow_update_user, $snow_update_password, $snow_assignment_group_name, $snow_instance) = @_;
   print "Retrieving Assignment Group $snow_assignment_group_name\n" if($opts{debug});
   #get sys_id for SN Assignment Group
-  # $cmd = "curl -s -H 'Authorization: basic cGFnZXJkdXR5LWludDpQYWdlckR1dHk=' " .
 
   $cmd = "curl -s -u $snow_update_user:$snow_update_password " .
       "-H 'Accept: application/json' " .
@@ -200,7 +199,6 @@ sub findConfigurationItem {
   my($snow_update_user, $snow_update_password, $parm_snow_ci_name, $snow_instance) = @_;
   print "Retrieving Assignment Group $parm_snow_ci_name\n" if($opts{debug});
   #get sys_id for SN Assignment Group
-  # $cmd = "curl -s -H 'Authorization: basic cGFnZXJkdXR5LWludDpQYWdlckR1dHk=' " .
 
   $cmd = "curl -s -u $snow_update_user:$snow_update_password " .
       "-H 'Accept: application/json' " .
@@ -223,7 +221,6 @@ sub updateAssignmentGroup {
   my($snow_update_user, $snow_update_password, $snow_ag_id, $snow_instance, $webhook_id, %service) = @_;
   print "Updating Assignment Group $snow_ag_id\n" if($opts{debug});
   #get sys_id for SN Assignment Group
-  # $cmd = "curl -s -H 'Authorization: basic cGFnZXJkdXR5LWludDpQYWdlckR1dHk=' " .
 
   if ($snow_ag_id)
   {
@@ -257,7 +254,6 @@ sub updateConfigurationItem {
 
   print "Updating Assignment Group $snow_ci_id\n" if($opts{debug});
   #get sys_id for SN Assignment Group
-  # $cmd = "curl -s -H 'Authorization: basic cGFnZXJkdXR5LWludDpQYWdlckR1dHk=' " .
 
   if ($snow_ci_id)
   {
@@ -385,14 +381,6 @@ sub pair {
   updateAssignmentGroup($parm_snow_update_user, $parm_snow_update_pw, $snow_ag_id, $parm_snow_instance, $found_webhook_id, %service);
 }
 
-#my($parm_snow_instance) = "dev52132";
-#my($parm_snow_api_user) = "pagerduty-int";
-#my($parm_snow_api_pw) = "PagerDuty";
-#my($parm_snow_update_user) = "pagerduty-int";
-#my($parm_snow_update_pw) = "PagerDuty";
-
-#y($parm_service_target) = "AddResponderCallout";
-#my($parm_snow_assignment_group_name) = "Change Management";
 my $csv = Text::CSV->new({ sep_char => ',' });
 
 my $file = $opts{filename};
