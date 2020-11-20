@@ -30,7 +30,7 @@ The Admin User and Password are used to retrieve and update the Assignment Group
 ## Running
 
 Parameters:
-* p = API Key (required) - This can be an API token (global or user) or an OAuth2 token as long as it has sufficient permissions.
+* p = PagerDuty API Key (required) - This can be an API token (global or user) or an OAuth2 token as long as it has sufficient permissions.
 * f = input file name (required)
 * i = ServiceNow instance (required)
 * a = ServiceNow REST API User id (required)
@@ -69,11 +69,11 @@ The integration will provision Services and Escalation Policies in PagerDuty fro
 
 The fields we set are:
 
-CIs
+Configuration Item (cmdb_ci)
 * Service ID
 * Webhook ID
 
-Assignment Group
+Assignment Group (sys_user_group)
 * Escalation Policy ID
 * Service ID (not needed when set to use both CIs and Assignment Groups)
 * Webhook ID (not needed when set to use both CIs and Assignment Groups)
@@ -84,7 +84,7 @@ In PagerDuty there needs to be a ServiceNow Extension on the Service to produce 
 
 So this script will take as input a CSV with a Service Name that maps to a Configuration Item Name, and optionally an Escalation Policy Name to map to an Assignment Group Name. It will look up the PagerDuty IDs and then update ServiceNow with those values.
 
-To explain the optional columns in the CSV: A PagerDuty Service ALWAYS has an Escalation Policy associated with it, so we can refer to that Escalation Policy and the input does NOT need to specify it. Similarly a Configuration OPTIONALLY has an Assignment Group associated with it, so we look for that Assignment Group and the input MAY not need to specify it. Since it's optional in ServiceNow, if you do not specify the Assignment Group in the input and one is not associated to the CI in ServiceNow, it will skip that row because we won't know the Assignment Group.
+To explain the optional columns in the CSV: A PagerDuty Service ALWAYS has an Escalation Policy associated with it, so we can refer to that Escalation Policy and the input does NOT need to specify it. Similarly a Configuration Item OPTIONALLY has an Assignment Group associated with it, so we look for that Assignment Group and the input MAY not need to specify it. Since it's optional in ServiceNow, if you do not specify the Assignment Group in the input and one is not associated to the CI in ServiceNow, it will skip that row because we won't know the Assignment Group.
 
 Have fun!
 
