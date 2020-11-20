@@ -59,19 +59,32 @@ In order for someone to use the PagerDuty ServiceNow integration, there needs to
 * Assignment Groups
 * Users
 
-There are analogous objects in the PagerDuty world for each of these.  Users and Incidents are clear, but the other two are not. 
+There are analogous objects in the PagerDuty world for each of these.  Users and Incidents are pretty clear, but the other two may not be. 
 
 In every case, we map between the two environments by adding fields to the ServiceNow tables for the PagerDuty IDs. When an Incident is created from PagerDuty, the new Incident ID is stored in the Incident row on the ServiceNow side.
 
-However to know which Service should refer to which Configuration Item and to know which Escalation Policy corresponds to which Assognment Group requires a similar assignment of PagerDuty IDs to the right objects. 
+However to know which Service should refer to which Configuration Item and to know which Escalation Policy corresponds to which Assignment Group requires a similar assignment of PagerDuty IDs to the right objects. 
 
 The integration will provision Services and Escalation Policies in PagerDuty from CIs and Assignment Groups, but if the Services and Policies already exist, the way to manually map is to enter the right IDs into the ServiceNow CI and Assignment Group records. See https://support.pagerduty.com/docs/servicenow-integration-guide#421-manually-provision-individual-configuration-items-to-pagerduty-optional
 
-So this script will take a CSV with a Service Name that maps to a Configuration Item, and optionally an Escalation Policy to map to an Assignment Group. It will look up the PagerDuty IDs and then update ServiceNow with those values.
+The fields we set are:
 
-A PagerDuty Service always has an Escalation Policy associated with it, so the input does NOT need to specify it. Similarly a Configuration OPTIONALLY has an Assignment Group associated with it, so the input does not need to specify it. However, since it's optional in ServiceNow, if you do not specify the Assignment Group in the input and one is not associated to the CI in ServiceNow, it will skip that row.
+CIs
+* Service ID
+* Webhook ID
 
-Also, if the PagerDuty Service does not have an Extension to ServiceNow, this script will create one using the api-user and api-password fields.
+Assignment Group
+* Escalation Policy ID
+* Service ID (not needed when set to use both CIs and Assignment Groups)
+* Webhook ID (not needed when set to use both CIs and Assignment Groups)
+
+Please note that, while you can choose to use only Assignment Groups OR both CIs and Assignment Groups in the integration Settings, this script will fill ALL the fields on both objects as a convenience. 
+
+In PagerDuty there needs to be a ServiceNow Extension on the Service to produce the Webhook ID. As a convenience, if the PagerDuty Service does not have an Extension to ServiceNow, this script will create one using the api-user and api-password fields.
+
+So this script will take as input a CSV with a Service Name that maps to a Configuration Item Name, and optionally an Escalation Policy Name to map to an Assignment Group Name. It will look up the PagerDuty IDs and then update ServiceNow with those values.
+
+To explain the optional columns in the CSV: A PagerDuty Service ALWAYS has an Escalation Policy associated with it, so we can refer to that Escalation Policy and the input does NOT need to specify it. Similarly a Configuration OPTIONALLY has an Assignment Group associated with it, so we look for that Assignment Group and the input MAY not need to specify it. Since it's optional in ServiceNow, if you do not specify the Assignment Group in the input and one is not associated to the CI in ServiceNow, it will skip that row because we won't know the Assignment Group.
 
 Have fun!
 
