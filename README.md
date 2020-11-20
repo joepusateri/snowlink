@@ -30,7 +30,7 @@ The Admin User and Password are used to retrieve and update the Assignment Group
 ## Running
 
 Parameters:
-* p = API Key (required)
+* p = API Key (required) - This can be an API token (global or user) or an OAuth2 token as long as it has sufficient permissions.
 * f = input file name (required)
 * i = ServiceNow instance (required)
 * a = ServiceNow REST API User id (required)
