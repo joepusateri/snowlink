@@ -71,9 +71,10 @@ So this script will take a CSV with a Service Name that maps to a Configuration 
 
 A PagerDuty Service always has an Escalation Policy associated with it, so the input does NOT need to specify it. Similarly a Configuration OPTIONALLY has an Assignment Group associated with it, so the input does not need to specify it. However, since it's optional in ServiceNow, if you do not specify the Assignment Group in the input and one is not associated to the CI in ServiceNow, it will skip that row.
 
+Also, if the PagerDuty Service does not have an Extension to ServiceNow, this script will create one using the api-user and api-password fields.
+
 Have fun!
 
-Also, if the PagerDuty Service does not have an Extension to ServiceNow, this script will create one using the api-user and api-password fields.
 
 
 
